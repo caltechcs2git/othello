@@ -1,6 +1,10 @@
 #include "player.hpp"
 
+<<<<<<< HEAD
 // This is a test comment I am adding 
+=======
+//Small change by Asta
+>>>>>>> 6f3a1ad800d05febd995a2ca0577ed22b2a3ab46
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
