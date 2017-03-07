@@ -54,6 +54,23 @@ bool Board::isDone() {
     return !(hasMoves(BLACK) || hasMoves(WHITE));
 }
 
+vector<Move*> Board::getMoves(Side side)
+{
+    vector<Move*> moves; 
+    for (int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            Move * move = new Move(i, j);
+            if(checkMove(move, side))
+            {
+                moves.push_back(move);
+            }
+        }    
+    }
+    return moves;
+}
+
 /*
  * Returns true if there are legal moves for the given side.
  */
