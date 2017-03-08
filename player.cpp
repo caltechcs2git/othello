@@ -16,6 +16,16 @@ Player::Player(Side side)
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
     this->side = side;
+    std::cerr << (side == WHITE) << std::endl;
+
+    if(side == BLACK)
+    {
+    	this->side_opp = WHITE;
+    }
+    else
+    {
+    	this->side_opp = BLACK;
+    }
 }
 
 /*
@@ -39,29 +49,188 @@ Player::~Player()
  * The move returned must be legal; if there are no valid moves for your side,
  * return nullptr.
  */
-Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    /*
-     * TODO: Implement how moves your AI should play here. You should first
-     * process the opponent's opponents move before calculating your own move
-     */
+Move *Player::doMove(Move *opponentsMove, int msLeft) 
+{
 	Move * move;
 	vector<Move*> moves;
+
 	if(board.hasMoves(side))
 	{
-		if(side == BLACK)
-		{
-			board.doMove(opponentsMove, WHITE);
-		}
-		else
-		{
-			board.doMove(opponentsMove, BLACK);
-		}
-
+		//update the board with the opponent's move first
+		board.doMove(opponentsMove, side_opp);
 		moves = board.getMoves(side);
-		move = moves[0];
+		move = getHeuristicMove(moves);
 		board.doMove(move, side);
 		return move;
-
 	}
     return nullptr;
+}
+
+/*
+@brief Calculates which move for with a simple heuristic
+@return the move that results in the greatest boardscore.
+*/
+Move * Player::getHeuristicMove(vector<Move*> moves)
+{
+	Move * move;
+	int bboardScore = NaiveHeuristic(board);
+	int nboardScore;
+	int max_score = -1000;
+
+	for(unsigned int i = 0; i < moves.size(); i++)
+	{
+		Board copy = *(board.copy());
+		copy.doMove(moves[i], side);
+		nboardScore = NaiveHeuristic(copy) - bboardScore;
+
+		if(CornerMove(moves[i]))
+		{
+			nboardScore = nboardScore * 3;
+		}
+		if(nextToCornerMove(moves[i]))
+		{
+			if(nboardScore)
+			nboardScore = nboardScore * -3;
+		}
+		if(edgeMove(moves[i]))
+		{
+			nboardScore = nboardScore * 2;
+		}
+
+		//updating board score and move if greater 
+		if (nboardScore > max_score)
+		{
+			max_score = nboardScore;
+			move = moves[i];
+		}
+	}
+	return move;
+}
+
+/*
+@brief calculates the naive board score: player's stones - opponent's stones
+		after a move is performed
+@return the integer representing the score
+*/
+int Player::NaiveHeuristic(Board b)
+{
+	return b.count(side) - b.count(side_opp);
+}
+
+/*
+@brief This method checks to see if a move is in a board corner.
+@return Returns true if move is in the corner
+*/
+bool Player::CornerMove(Move * move)
+{
+	if((move -> getX() == 0) && (move -> getY() == 0))
+	{
+		return true;
+	}
+	else if((move -> getX() == 7) && (move -> getY() == 7))
+	{
+		return true;
+	}
+	else if((move -> getX() == 0) && (move -> getY() == 7))
+	{
+		return true;
+	}
+	else if((move -> getX() == 7) && (move -> getY() == 0))
+	{
+		return true;
+	}
+	return false;
+}
+
+/*
+@brief checks to see if a move is an edge move
+@return  Returns true if it is an edge move
+*/
+bool Player::edgeMove(Move * move)
+{
+	if(!(CornerMove(move) || nextToCornerMove(move)))
+	{
+		if(move -> getX() == 0)
+		{
+			return true;
+		} 
+		else if (move -> getX() == 7)
+		{
+			return true;
+		}
+		else if (move->getY() == 0)
+		{
+			return true;
+		}
+		else if (move->getY() == 7)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/*
+@brief  This method checks to see if a move is next to a corner
+@return  Returns true if the move is next to a corner
+*/
+bool Player::nextToCornerMove(Move * move)
+{
+	//upperleft
+	if((move -> getX() == 0) && (move -> getY() == 1))
+	{
+		return true;
+	}
+	else if((move -> getX() == 1) && (move -> getY() == 0))
+	{
+		return true;
+	}
+	else if((move -> getX() == 1) && (move -> getY() == 1))
+	{
+		return true;
+	}
+
+	//lowerright
+	else if((move -> getX() == 7) && (move -> getY() == 6))
+	{
+		return true;
+	}
+	else if((move -> getX() == 6) && (move -> getY() == 7))
+	{
+		return true;
+	}
+	else if((move -> getX() == 6) && (move -> getY() == 6))
+	{
+		return true;
+	}
+
+	//lowerleft
+	else if((move -> getX() == 0) && (move -> getY() == 6))
+	{
+		return true;
+	}
+	else if((move -> getX() == 1) && (move -> getY() == 7))
+	{
+		return true;
+	}
+	else if((move -> getX() == 1) && (move -> getY() == 6))
+	{
+		return true;
+	}
+
+	//upperright
+	else if((move -> getX() == 6) && (move -> getY() == 0))
+	{
+		return true;
+	}
+	else if((move -> getX() == 7) && (move -> getY() == 1))
+	{
+		return true;
+	}
+	else if((move -> getX() == 6) && (move -> getY() == 1))
+	{
+		return true;
+	}
+
+	return false;
 }
