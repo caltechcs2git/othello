@@ -53,13 +53,22 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
 {
 	Move * move;
 	vector<Move*> moves;
-
+	
 	if(board.hasMoves(side))
 	{
 		//update the board with the opponent's move first
 		board.doMove(opponentsMove, side_opp);
 		moves = board.getMoves(side);
-		move = getHeuristicMove(moves);
+
+		if (testingMinimax)
+		{
+			move = getMinimaxMove(moves);
+		}
+		else
+		{
+			move = getHeuristicMove(moves);
+		}
+
 		board.doMove(move, side);
 		return move;
 	}
@@ -67,7 +76,41 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
 }
 
 /*
-@brief Calculates which move for with a simple heuristic
+@brief Calculates which move with a Minimax
+@return returns the calculated move
+*/
+Move * Player::getMinimaxMove(vector<Move*> moves)
+{
+	Move* minimax;
+	int nnboardScore;
+	int max = -1000;
+
+	for(unsigned int i = 0; i < moves.size(); i++)
+	{
+		Board copy1 = *(board.copy());
+		copy1.doMove(moves[i], side);
+		
+		vector<Move*> moves_n = copy1.getMoves(side);
+
+		for(unsigned int j = 0; j < moves_n.size(); j++)
+		{
+			Board copy2 = *(copy1.copy());
+			copy2.doMove(moves_n[i], side);
+			nnboardScore = NaiveHeuristic(copy2) - NaiveHeuristic(copy1);
+			int score = ScoreHeuristic(nnboardScore, moves_n[i]);
+
+			if (score > max)
+			{
+				max = score;
+				minimax = moves[i];
+			}
+		}
+	}
+	return minimax;
+}
+
+/*
+@brief Calculates which move with a simple heuristic
 @return the move that results in the greatest boardscore.
 */
 Move * Player::getHeuristicMove(vector<Move*> moves)
@@ -83,28 +126,39 @@ Move * Player::getHeuristicMove(vector<Move*> moves)
 		copy.doMove(moves[i], side);
 		nboardScore = NaiveHeuristic(copy) - bboardScore;
 
-		if(CornerMove(moves[i]))
-		{
-			nboardScore = nboardScore * 3;
-		}
-		if(nextToCornerMove(moves[i]))
-		{
-			if(nboardScore)
-			nboardScore = nboardScore * -3;
-		}
-		if(edgeMove(moves[i]))
-		{
-			nboardScore = nboardScore * 2;
-		}
+		int score  = ScoreHeuristic(nboardScore, moves[i]);
 
-		//updating board score and move if greater 
-		if (nboardScore > max_score)
+		if (score > max_score)
 		{
-			max_score = nboardScore;
+			max_score = score;
 			move = moves[i];
 		}
+		
 	}
-	return move;
+	return move; 
+}
+
+/*
+@brief  Will calculate the score of a given move with weighted square spaces
+@return  returns the calculated score.
+*/
+int Player::ScoreHeuristic(int nboardscore, Move* move)
+{
+	int n = nboardscore;
+	if(CornerMove(move))
+	{
+		n = n * 10;
+	}
+	if(nextToCornerMove(move))
+	{
+		if(n)
+			n = n * -3;
+	}
+	if(edgeMove(move))
+	{
+		n = n * 2;
+	}
+	return n;
 }
 
 /*

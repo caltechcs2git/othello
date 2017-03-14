@@ -27,7 +27,9 @@ private:
 	bool edgeMove(Move * move);
 	bool nextToCornerMove(Move * move);
 	Move *getHeuristicMove(vector<Move*> moves);
+	Move * getMinimaxMove(vector<Move*> moves);
 	int NaiveHeuristic(Board b);
+	int ScoreHeuristic(int nboardscore, Move* move);
 };
 
 #endif
