@@ -25,7 +25,8 @@ calculating the board position score (the number of stones the player's opponent
 subtracted from the number of stones the player has). To improve on this heuristic, 
 we first fixed our modifiers so that scores calculated reflected if the move was favorable
 or not more accurately. We did this by changing the multipliers to better account for
-edge cases. Then, we decided to implement a minimax algorithm, because our algorith
+edge cases. Furthermore, a new method was added to return the score for easier use in a minimax function.
+Then, we attempted to make a minimax, using heuristic scoring to decide the move returned because our algorith
 as it stood calculated the best move in the short room, but its greedy nature left
 us susceptible to lose by large amounts in a tournament setting. To implement a 
 simple minimax algorithm, we decided to use two levels of branches calculating the
@@ -38,10 +39,9 @@ Explain why you think your strategy(s) will work.
 
 We think our strategy will work because if our opponent is intelligent (which we are
 assuming it is), a minimax algorithm will make our AI less vulnerable to "critical hits"
-where 
+whereas the simple heuristic only outputs immediate, short-term moves. 
 
-Feel free to discuss any ideas
-were tried but didn't work out. 
+
 
 
 
